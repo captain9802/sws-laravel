@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('title');
             $table->text('content');
             $table->date('date');
+            $table->string('image_url')->nullable();
             $table->timestamps();
         });
     }
