@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\PostRequest;
 use App\Services\PostService;
 use Illuminate\Http\Request;
+use App\Models\Post;
 
 class PostController extends Controller
 {
@@ -27,10 +28,33 @@ class PostController extends Controller
         ], 201);
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $posts = $this->postService->getAllPosts();
-        return response()->json($posts);
+        $page = $request->input('page', 1);
+        $limit = $request->input('limit', 12);
+        $search = $request->input('search', '');
+        $tags = $request->input('tags', '');
+
+        $query = Post::query();
+
+        if (!empty($search)) {
+            $query->where('title', 'like', '%' . $search . '%');
+        }
+
+        if (!empty($tags)) {
+            $tagsArray = explode(',', $tags);
+
+            foreach ($tagsArray as $tag) {
+                $query->whereJsonContains('tags', $tag);
+            }
+        }
+
+        $posts = $query->paginate($limit, ['*'], 'page', $page);
+
+        return response()->json([
+            'blogs' => $posts->items(),
+            'totalCount' => $posts->total()
+        ]);
     }
 
     public function show($id)
