@@ -2,7 +2,7 @@
 
 
 namespace App\Services;
-
+use Illuminate\Support\Facades\DB;
 use App\Models\Post;
 
 class PostService
@@ -42,20 +42,31 @@ class PostService
         return Post::findOrFail($id);
     }
 
-    public function updatePost($id, $data)
+    public function updatePost($id, $validatedData)
     {
-        $post = Post::findOrFail($id);
-        $post->title = $data['title'];
-        $post->content = $data['content'];
-        $post->tags = $data['tags'];
-        $post->image_url = $data['image'] ?? $post->image_url;
-        $post->save();
+        $post = Post::find($id);
+        if (!$post) {
+            throw new \Exception("블로그 글을 찾을 수 없습니다.");
+        }
+        $post->update($validatedData);
         return $post;
     }
 
     public function deletePost($id)
-    {
-        $post = Post::findOrFail($id);
-        $post->delete();
-    }
+        {
+            DB::beginTransaction();
+            try {
+                $post = Post::find($id);
+
+                if (!$post) {
+                    return false;
+                }
+                $post->delete();
+                DB::commit();
+                return true;
+            } catch (\Exception $e) {
+                DB::rollBack();
+                throw new \Exception("게시글 삭제 중 오류 발생: " . $e->getMessage());
+            }
+        }
 }

@@ -66,20 +66,44 @@ class PostController extends Controller
     public function update(PostRequest $request, $id)
     {
         $validated = $request->validated();
-        $post = $this->postService->updatePost($id, $validated);
-        return response()->json([
-            'status' => 'success',
-            'message' => '블로그 글이 성공적으로 업데이트되었습니다.',
-            'data' => $post
-        ]);
+        try {
+            $post = $this->postService->updatePost($id, $validated);
+            return response()->json([
+                'status' => 'success',
+                'message' => '블로그 글이 성공적으로 업데이트되었습니다.',
+                'data' => $post
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => '블로그 글 업데이트에 실패했습니다.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     public function destroy($id)
     {
-        $this->postService->deletePost($id);
-        return response()->json([
-            'status' => 'success',
-            'message' => '블로그 글이 성공적으로 삭제되었습니다.'
-        ]);
+        try {
+            $deleted = $this->postService->deletePost($id);
+
+            if (!$deleted) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => '해당 블로그 글을 찾을 수 없습니다.'
+                ], 404);
+            }
+
+            return response()->json([
+                'status' => 'success',
+                'message' => '블로그 글이 성공적으로 삭제되었습니다.'
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => '블로그 글 삭제 중 오류가 발생했습니다.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 }

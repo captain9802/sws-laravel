@@ -10,7 +10,7 @@ Route::middleware([\Illuminate\Http\Middleware\HandleCors::class])
         Route::post('/add', [PostController::class, 'create']);
         Route::get('/', [PostController::class, 'index']);
         Route::get('{id}', [PostController::class, 'show']);
-        Route::put('{id}', [PostController::class, 'update']);
+        Route::put('/update/{id}', [PostController::class, 'update']);
         Route::delete('{id}', [PostController::class, 'destroy']);
     });
 
