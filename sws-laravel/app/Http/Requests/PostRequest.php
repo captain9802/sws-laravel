@@ -16,8 +16,8 @@ class PostRequest extends FormRequest
         return [
             'title' => 'required|string|max:255',
             'content' => 'required|string',
-            'image' => 'nullable|string',
-            'tags' => 'nullable|array',
+            'image' => 'nullable|file|mimes:jpg,jpeg,png,gif',
+            'tags' => 'nullable|string',
         ];
     }
 

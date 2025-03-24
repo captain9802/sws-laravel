@@ -12,9 +12,9 @@ class PostService
         $post = new Post();
         $post->title = $data['title'];
         $post->content = $data['content'];
-        $post->tags = json_encode($data['tags'] ?? []);
-        $post->image_url = $data['image'] ?? null;
-        $post->date = now();
+        $post->tags = $data['tags'] ?? '';
+        $post->image = $data['image'] ?? null;
+        $post->date = now()->toDateString();
         $post->save();
         return $post;
     }
