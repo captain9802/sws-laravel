@@ -3,19 +3,25 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\LoginRequest;
 use App\Http\Requests\PostRequest;
+use App\Models\User;
 use App\Services\PostService;
+use App\Services\LoginService;
 use App\Services\FileService;
 use Illuminate\Http\Request;
 use App\Models\Post;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 class PostController extends Controller
 {
     protected $postService;
     protected $fileService;
+    protected  $loginService;
 
     public function __construct(PostService $postService, FileService  $fileService)
     {
@@ -26,7 +32,6 @@ class PostController extends Controller
     public function create(PostRequest $request)
     {
         $validated = $request->validated();
-
         if (isset($validated['content'])) {
             $validated['content'] = $this->processImagesInContent($validated['content']);
         }
@@ -197,5 +202,27 @@ class PostController extends Controller
         preg_match_all('/<img[^>]+src="(https:\/\/[^"]+\.(jpg|png|jpeg|gif))"/', $content, $matches);
         preg_match_all('/https:\/\/.*\.(jpg|png|jpeg|gif)/', $content, $matches2);
         return array_merge($matches[1], $matches2[0]);
+    }
+
+    public function login(LoginRequest $request)
+    {
+        $credentials = $request->only('email', 'password');
+
+        $user = User::where('email', $credentials['email'])->first();
+
+        if (!$user) {
+            return response()->json(['error' => '사용자를 찾을 수 없음.'], 401);
+        }
+
+        if (!Hash::check($credentials['password'], $user->password)) {
+            return response()->json(['error' => '비밀번호 틀림'], 401);
+        }
+
+        $token = JWTAuth::fromUser($user);
+
+        return response()->json([
+            'token' => $token,
+            'message' => '로그인 성공',
+        ]);
     }
 }
