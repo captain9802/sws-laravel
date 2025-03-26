@@ -43,7 +43,7 @@ class PostController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'message' => '새 블로그 글이 성공적으로 작성되었습니다.',
+            'message' => '새 블로그 글이 성공적으로 등록되었습니다.',
             'data' => $post
         ], 201);
     }
@@ -89,7 +89,7 @@ class PostController extends Controller
         $search = $request->input('search', '');
         $tags = $request->input('tags', '');
 
-        $query = Post::query();
+        $query = Post::query()->latest('created_at');
 
         if (!empty($search)) {
             $query->where('title', 'like', '%' . $search . '%');
@@ -211,18 +211,19 @@ class PostController extends Controller
         $user = User::where('email', $credentials['email'])->first();
 
         if (!$user) {
-            return response()->json(['error' => '사용자를 찾을 수 없음.'], 401);
+            return response()->json(['message' => '사용자가 존재하지 않습니다.'], 401);
         }
 
         if (!Hash::check($credentials['password'], $user->password)) {
-            return response()->json(['error' => '비밀번호 틀림'], 401);
+            return response()->json(['message' => '비밀번호 틀림'], 402);
         }
 
         $token = JWTAuth::fromUser($user);
 
         return response()->json([
             'token' => $token,
-            'message' => '로그인 성공',
+            'message' => '로그인 성공 !',
+            'status' => 403
         ]);
     }
 }
