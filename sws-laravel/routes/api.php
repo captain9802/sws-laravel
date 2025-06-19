@@ -17,4 +17,3 @@ Route::middleware([\Illuminate\Http\Middleware\HandleCors::class])
             Route::put('/update/{id}', [PostController::class, 'update']);
         });
     });
-
